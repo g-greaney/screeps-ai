@@ -1,7 +1,10 @@
-var SpawnManager = require('spawn-manager');
+var RoomManager = require('room-manager');
+var CreepFactory = require('creep-factory');
 
-var spawnManager = new SpawnManager();
+var roomManager = new RoomManager(Game.spawns.Spawn1.room);
 
 module.exports.loop = function() {
-  spawnManager.spawnCreep('harvester');
+  CreepFactory.cleanup();
+  roomManager.manageCreeps();
+  roomManager.act();
 };

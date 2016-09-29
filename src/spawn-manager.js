@@ -1,39 +1,22 @@
-var Utils = require('utils');
-var RoleHarvester = require('role-harvester');
-var RoleBase = require('role-base');
+var CreepFactory = require('creep-factory');
 
-function SpawnManager() {
-  this.spawn = 'Spawn1';
+function SpawnManager(room) {
+  this.room = room;
+  this.spawns = this.room.find(FIND_MY_STRUCTURES, {
+    filter: {structureType: STRUCTURE_SPAWN}
+  });
 }
 
-SpawnManager.prototype.spawnCreep = function(role) {
+SpawnManager.prototype.spawnCreep = function(role, memory) {
   var parts = [WORK, CARRY, MOVE];
-  var canSpawn = Game.spawns[this.spawn].canCreateCreep(parts, undefined, {'role': role});
+  var canSpawn = this.spawns[0].canCreateCreep(parts, undefined, {'role': role});
   if (canSpawn !== 0) {
-    return;
+    return null;
   }
-  var name = Game.spawns[this.spawn].createCreep(parts, undefined, {'role': role});
-  var basicCreep = Game.creeps[name];
-  var loadedCreep = new RoleHarvester(basicCreep);
-  Utils.extend(loadedCreep, RoleBase);
-  loadedCreep.init(basicCreep.find(FIND_SOURCES)[0].id);
-  this.creeps.push(loadedCreep);
-};
-
-SpawnManager.prototype.loadCreeps = function() {
-  var creeps = [];
-  for (var name in Game.creeps) {
-    var basicCreep = Game.creeps[name];
-    var loadedCreep = null;
-    if (basicCreep.memory.role == 'harvester') {
-      loadedCreep = new RoleHarvester(basicCreep);
-    }
-    if (loadedCreep !== null) {
-      Utils.extend(loadedCreep, RoleBase);
-      creeps.push(loadedCreep);
-    }
-  }
-  return creeps;
+  var name = this.spawns[0].createCreep(parts, undefined, {'role': role});
+  var loadedCreep = CreepFactory.buildCreep(name);
+  loadedCreep.init(loadedCreep.creep.room.find(FIND_SOURCES)[0].id);
+  return loadedCreep;
 };
 
 module.exports = SpawnManager;
